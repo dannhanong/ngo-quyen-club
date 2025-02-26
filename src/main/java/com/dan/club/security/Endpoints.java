@@ -30,6 +30,7 @@ public class Endpoints {
     };
 
     public static final String[] ADMIN_GET_ENDPOINTS = {
+            "/auth/admin/**",
     };
 
     public static final String[] ADMIN_DELETE_ENDPOINTS = {
@@ -43,6 +44,7 @@ public class Endpoints {
             "/auth/validate",
             "/auth/user/**",
             "/auth",
+            "/auth/public/**",
             "/auth/get-name/**",
             "/auth/user/profile/**",
             "/auth/public/**",

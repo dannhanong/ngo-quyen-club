@@ -214,9 +214,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Page<UserAllInfo> getAllUserInfoAndByKeyword(Pageable pageable, String keyword) {
-        List<User> users = userRepository.lSearchByKeyword(keyword);
-        List<UserAllInfo> userAllInfos = new ArrayList<>();
-        for (User user : users) {
+        // Sử dụng phương thức có hỗ trợ phân trang
+        Page<User> userPage = userRepository.searchByKeyword(keyword, pageable);
+        
+        // Chuyển đổi Page<User> thành Page<UserAllInfo> sử dụng map
+        return userPage.map(user -> {
             UserAllInfo userAllInfo = new UserAllInfo();
             userAllInfo.setId(user.getId());
             userAllInfo.setName(user.getName());
@@ -228,13 +230,12 @@ public class UserServiceImpl implements UserService {
             userAllInfo.setEnabled(user.isEnabled());
             userAllInfo.setDeletedAt(user.getDeletedAt());
 
-            userAllInfos.add(userAllInfo);
             Optional<Role> highestRole = user.getRoles().stream()
                     .min(Comparator.comparingInt(this::getRolePriority));
-
             highestRole.ifPresent(role -> userAllInfo.setRoles(role.getName().name().toLowerCase()));
-        }
-        return new PageImpl<>(userAllInfos, pageable, userAllInfos.size());
+            
+            return userAllInfo;
+        });
     }
 
     @Override
@@ -303,6 +304,28 @@ public class UserServiceImpl implements UserService {
                 .avatarCode(user.getAvatarCode())
                 .createdAt(user.getCreatedAt())
                 .build();
+    }
+
+    @Override
+    public List<User> getUsersTeacher() {
+        return userRepository.findAll().stream()
+                .filter(user -> {
+                    Set<Role> roles = user.getRoles();
+                    return roles.stream().anyMatch(role -> role.getName() == RoleName.TEACHER) &&
+                            roles.stream().noneMatch(role -> role.getName() == RoleName.ADMIN);
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<User> getUsersStudent() {
+        return userRepository.findAll().stream()
+                .filter(user -> {
+                    Set<Role> roles = user.getRoles();
+                    return roles.stream().anyMatch(role -> role.getName() == RoleName.USER) &&
+                            roles.stream().noneMatch(role -> role.getName() == RoleName.TEACHER);
+                })
+                .collect(Collectors.toList());
     }
 
     @Override

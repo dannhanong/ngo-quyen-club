@@ -43,4 +43,6 @@ public interface UserService extends UserDetailsService {
     UserDetail getUserById(Long id);
     ResponseMessage updateProfile(UpdateProfile updateProfile, String username);
     UserProfile getProfile(String username);
+    List<User> getUsersTeacher();
+    List<User> getUsersStudent();
 }

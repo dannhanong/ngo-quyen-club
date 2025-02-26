@@ -127,13 +127,13 @@ public class AuthController {
     @GetMapping("/admin/get-all-users")
     public ResponseEntity<Page<UserAllInfo>> getAllUserAndByKeyword(@RequestParam(defaultValue = "0") int page,
                                                                     @RequestParam(defaultValue = "10") int size,
-                                                                    @RequestParam(defaultValue = "name") String sortBy,
-                                                                    @RequestParam(defaultValue = "asc") String order,
+                                                                    @RequestParam(defaultValue = "id") String sortBy,
+                                                                    @RequestParam(defaultValue = "desc") String order,
                                                                     @RequestParam(defaultValue = "") String keyword) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(order), sortBy));
-        return new ResponseEntity<>(userService.getAllUserInfoAndByKeyword(pageable, keyword), HttpStatus.OK);
+        Page<UserAllInfo> usersPage = userService.getAllUserInfoAndByKeyword(pageable, keyword);
+        return new ResponseEntity<>(usersPage, HttpStatus.OK);
     }
-
 
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordForm forgotPasswordForm){
@@ -178,6 +178,16 @@ public class AuthController {
         String token = getTokenFromRequest(request);
         String username = jwtService.extractUsername(token);
         return new ResponseEntity<>(userService.updateProfile(updateProfile, username), HttpStatus.OK);
+    }
+
+    @GetMapping("/public/get-all-users")
+    public ResponseEntity<List<User>> getAllStudents() {
+        return new ResponseEntity<>(userService.getUsersStudent(), HttpStatus.OK);
+    }
+
+    @GetMapping("/public/get-all-teachers")
+    public ResponseEntity<List<User>> getAllTeachers() {
+        return new ResponseEntity<>(userService.getUsersTeacher(), HttpStatus.OK);
     }
 
     private String getTokenFromRequest(HttpServletRequest request) {
